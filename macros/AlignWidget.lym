@@ -15,8 +15,11 @@
  <menu-path/>
  <interpreter>python</interpreter>
  <dsl-interpreter-name/>
- <text>import pya
+ <text>
+import os
+import pya
 
+iconPath = str(os.path.dirname(__file__)) + "/Icon/%s.png"
 
 class AlignWidget(pya.QWidget):
     def __init__(self, alignUI = True, snapUI = True, rotateUI = True, booleanUI = False, distributeUI = True, parent = None):
@@ -24,13 +27,10 @@ class AlignWidget(pya.QWidget):
         self.firstObj = None
         self.initUI(alignUI, snapUI, rotateUI, booleanUI, distributeUI)
         
-        
     def initUI(self, alignUI, snapUI, rotateUI, booleanUI, distributeUI):
         columnSpacing            = 8
         rowSpacing               = 8
         categorySpacing          = 20
-        iconPath                 = r"C:\Users\scott\localsend\Icon\%s.png"
-        
         self.alignmentLB         = TitleLB("Alignment")
         self.snapLB              = TitleLB("Snap")
         self.rotationLB          = TitleLB("Rotate")
@@ -200,12 +200,15 @@ class AlignWidget(pya.QWidget):
         self.grid.setVerticalSpacing(2)
         self.setLayout(self.grid)
         self.setWindowFlags(pya.Qt.WindowStaysOnTopHint)
+        self.setWindowTitle (iconPath)
+        
         
     def selectedShapes(self):
+        layoutView = mainWindow.current_view()  
         return sorted([s for s in layoutView.each_object_selected()], key=lambda s: s.seq)
         
     def rotateFlipShape(self, rotate = 0, flipH = False, flipV = False, applyEach = False):
-    
+        layoutView = mainWindow.current_view()  
         layoutView.transaction("Rotation %.2f %s%s" % (rotate, ("H" if flipH else ""), ("V" if flipH else "")))
         try:
             if applyEach:
@@ -238,6 +241,7 @@ class AlignWidget(pya.QWidget):
             layoutView.commit()
             
     def visibleLayers(self):
+        layoutView = mainWindow.current_view()  
         return [    layerProp.layer_index() for layerProp in layoutView.each_layer() if layerProp.visible]
 
     def useVisibleLayers(self):
@@ -253,7 +257,7 @@ class AlignWidget(pya.QWidget):
         return box                 
 
     def distrubute(self, distributeH = False, distributeV = False, centerPitch = True, useVisibleLayers = False):
-        
+        layoutView   = mainWindow.current_view()  
         sortedShapes = sorted(self.selectedShapes(), key = lambda o : (self.instVisibleBBox(o.inst(), useVisibleLayers) if o.is_cell_inst() else o.shape.bbox()).center().x)
         oFirst       = sortedShapes[ 0]
         oLast        = sortedShapes[-1]
@@ -299,9 +303,9 @@ class AlignWidget(pya.QWidget):
         
     def alignSnap(self, transText, useVisibleLayers = False):
         firstBox   = pya.Box()
+        layoutView = mainWindow.current_view()  
         layoutView.transaction(transText)
         try:
-            
             for o in self.selectedShapes(): 
     
                 if firstBox.empty():
@@ -416,29 +420,13 @@ class SquarePB(pya.QPushButton):
             self.clicked(bindFunction)
 
 
-def showWindow():
-    screenRect    = pya.QApplication.desktop().screenGeometry()
-    height        = screenRect.height
-    width         = screenRect.width
-    widget        = AlignWidget()
-    widget.move(pya.QPoint(200, height -450))
-    widget.show()
-
 
 mainWindow    = pya.Application.instance().main_window()
 screenRect    = pya.QApplication.desktop().screenGeometry()
-layoutView    = None
-cellView      = None
-layout        = None 
-
-
 
 def callWidget():
-
-    layoutView    = mainWindow.current_view()
+    layoutView = mainWindow.current_view()  
     if layoutView:
-        cellView      = layoutView.active_cellview()
-        layout        = cellView.layout()
         height        = screenRect.height
         width         = screenRect.width
         widget        = AlignWidget()
@@ -453,5 +441,7 @@ menu      = pya.Application.instance().main_window().menu()
 act       = pya.Action()
 act.title = "Align Tool"
 menu.insert_item("tools_menu.end", "Align Tool", act)
-act.on_triggered(lambda : callWidget())</text>
+act.on_triggered(lambda : callWidget())
+
+</text>
 </klayout-macro>
