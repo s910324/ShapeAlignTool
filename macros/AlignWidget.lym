@@ -78,16 +78,16 @@ class AlignWidget(pya.QWidget):
         self.booleanIntersectPB  = SquarePB(iconPath % "booleanIntersect")
         self.booleanSubstractPB  = SquarePB(iconPath % "booleanSubstract")
         self.booleanSeperatePB   = SquarePB(iconPath % "booleanSeperate")
-               
-        self.rotateCCW90PB       = SquarePB(iconPath % "rotateCCW90",       lambda : self.rotateFlipShape( 90, False, False, True))
-        self.rotateCW90PB        = SquarePB(iconPath % "rotateCW90",        lambda : self.rotateFlipShape(-90, False, False, True))
-        self.flipHorizontalPB    = SquarePB(iconPath % "flipHorizontal",    lambda : self.rotateFlipShape(  0,  True, False, True))
-        self.flipVerticalPB      = SquarePB(iconPath % "flipVertical",      lambda : self.rotateFlipShape(  0, False,  True, True))
         
+        self.rotateCCW90PB       = SquarePB(iconPath % "rotateCCW90",       lambda : self.rotateFlipShape( 90, False, False, self.rotateByEachCenter()))
+        self.rotateCW90PB        = SquarePB(iconPath % "rotateCW90",        lambda : self.rotateFlipShape(-90, False, False, self.rotateByEachCenter()))
+        self.flipHorizontalPB    = SquarePB(iconPath % "flipHorizontal",    lambda : self.rotateFlipShape(  0,  True, False, self.rotateByEachCenter()))
+        self.flipVerticalPB      = SquarePB(iconPath % "flipVertical",      lambda : self.rotateFlipShape(  0, False,  True, self.rotateByEachCenter()))
+
         self.configUseAllRB      = pya.QRadioButton("Use all layers for align/snap")
-        self.configUseVisRB      = pya.QRadioButton("Use visible layers only for align/snap")
-        self.configRotAllRB      = pya.QRadioButton("Rotate entire selection")
-        self.configRotEachRB     = pya.QRadioButton("Rotate each shape")
+        self.configUseVisRB      = pya.QRadioButton("Use visible only for align/snap")
+        self.configRotAllRB      = pya.QRadioButton("Rotate about selection center")
+        self.configRotEachRB     = pya.QRadioButton("Rotate each shape center")
 
         self.donePB              = pya.QPushButton("Done")
 
@@ -200,12 +200,26 @@ class AlignWidget(pya.QWidget):
         self.grid.setVerticalSpacing(2)
         self.setLayout(self.grid)
         self.setWindowFlags(pya.Qt.WindowStaysOnTopHint)
-        self.setWindowTitle (iconPath)
+        self.setWindowTitle ("Align Tool")
         
         
     def selectedShapes(self):
         layoutView = mainWindow.current_view()  
         return sorted([s for s in layoutView.each_object_selected()], key=lambda s: s.seq)
+    
+    def rotateAbout(self, o, rotate = 0, rx = 0, ry = 0, flipH = False, flipV = False):
+        item      = (o.inst() if o.is_cell_inst() else o.shape)
+        cx, cy    = item.bbox().center().x, item.bbox().center().y
+        tx, ty    = o.trans().disp.x, o.trans().disp.y
+        mirror    = False
+        mirror    = not(mirror) if flipV else mirror
+        mirror    = not(mirror) if flipH else mirror
+        rotate    = rotate + 180 if flipH else rotate
+        
+        item.transform(pya.Trans(  tx - rx,  ty - ry))
+        item.transform(pya.ICplxTrans(1, rotate, mirror, 0, 0))
+        item.transform(pya.Trans(  -tx + rx,  -ty + ry))
+
         
     def rotateFlipShape(self, rotate = 0, flipH = False, flipV = False, applyEach = False):
         layoutView = mainWindow.current_view()  
@@ -214,29 +228,20 @@ class AlignWidget(pya.QWidget):
             if applyEach:
                 for o in self.selectedShapes():
                     item      = (o.inst() if o.is_cell_inst() else o.shape)
-                    oldCenter = item.bbox().center()
-                    trans     = pya.ICplxTrans(1, rotate, False, 0, 0)
-                    trans     = trans * pya.Trans.M90  if flipH else trans
-                    trans     = trans * pya.Trans.M0   if flipV else trans
-                    item.transform(trans)
-                    
-                    newCenter = item.bbox().center()
-                    item.transform(pya.Trans(oldCenter.x - newCenter.x, oldCenter.y - newCenter.y))
+                    cx, cy    = item.bbox().center().x, item.bbox().center().y
+                    tx, ty    = o.trans().disp.x, o.trans().disp.y
+                    self.rotateAbout(o, rotate, (cx + tx), (cy + ty), flipH, flipV)
                     
             else:
                 groupBox = pya.Box()  
                 for o in self.selectedShapes():
                     item      = (o.inst()if o.is_cell_inst() else o.shape)
-                    groupBox += item.bbox()
-                    
+                    groupBox += item.bbox().transformed(pya.Trans(o.trans().disp.x, o.trans().disp.y))
+
                 groupCenter = groupBox.center()
                 for o in self.selectedShapes():
-                    item      = (o.inst()if o.is_cell_inst() else o.shape)                
-                    trans     = pya.ICplxTrans(1, rotate, False, 0, 0)
-                    trans     = trans * pya.Trans.M90  if flipH else trans
-                    trans     = trans * pya.Trans.M0   if flipV else trans
-                    item.transform(trans)
-                    
+                    self.rotateAbout(o, rotate, groupCenter.x, groupCenter.y, flipH, flipV)
+
         finally:
             layoutView.commit()
             
@@ -246,7 +251,10 @@ class AlignWidget(pya.QWidget):
 
     def useVisibleLayers(self):
         return self.configUseVisRB.isChecked()
-
+        
+    def rotateByEachCenter(self):
+        return self.configRotEachRB.isChecked()
+        
     def instVisibleBBox(self, inst, useVisibleLayers = False):    
         box = pya.Box()      
         if useVisibleLayers:
@@ -423,8 +431,8 @@ class SquarePB(pya.QPushButton):
 
 mainWindow    = pya.Application.instance().main_window()
 screenRect    = pya.QApplication.desktop().screenGeometry()
-
 def callWidget():
+
     layoutView = mainWindow.current_view()  
     if layoutView:
         height        = screenRect.height
@@ -433,15 +441,15 @@ def callWidget():
         widget.move(pya.QPoint(200, height -450))
         widget.show()
     else:
-        msgBox = pya.QMessageBox()
-        msgBox.setText("No Active View.")
-        msgBox.exec_()       
-
-menu      = pya.Application.instance().main_window().menu()
-act       = pya.Action()
-act.title = "Align Tool"
-menu.insert_item("tools_menu.end", "Align Tool", act)
-act.on_triggered(lambda : callWidget())
+        pass
+              
+def bindMenu():
+    menu      = pya.Application.instance().main_window().menu()
+    act       = pya.Action()
+    act.title = "Align Tool"
+    menu.insert_item("tools_menu.end", "Align Tool", act)
+    act.on_triggered(lambda : callWidget())
+bindMenu()
 
 </text>
 </klayout-macro>
