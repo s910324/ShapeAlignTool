@@ -438,7 +438,9 @@ def callWidget():
         height        = screenRect.height
         width         = screenRect.width
         widget        = AlignWidget()
-        widget.move(pya.QPoint(200, height -450))
+        x = mainWindow.pos.x + 25
+        y = mainWindow.pos.y + mainWindow.height - widget.height - 50
+        widget.move(pya.QPoint(x, y))
         widget.show()
     else:
         pass
