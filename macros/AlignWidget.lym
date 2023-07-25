@@ -15,8 +15,7 @@
  <menu-path/>
  <interpreter>python</interpreter>
  <dsl-interpreter-name/>
- <text>
-import os
+ <text>import os
 import pya
 
 iconPath = str(os.path.dirname(__file__)) + "/Icon/%s.png"
@@ -38,38 +37,38 @@ class AlignWidget(pya.QWidget):
         self.distributeLB        = TitleLB("Distribute")
         self.configLB            = TitleLB("Configuration")       
         
-        self.alignLeftPB         = SquarePB(iconPath % "alignLeft",         lambda : self.alignSnap("alignLeft",         self.useVisibleLayers()))
-        self.alignCenterPB       = SquarePB(iconPath % "alignCenter",       lambda : self.alignSnap("alignCenter",       self.useVisibleLayers()))
-        self.alignRightPB        = SquarePB(iconPath % "alignRight",        lambda : self.alignSnap("alignRight",        self.useVisibleLayers()))
+        self.alignLeftPB         = SquarePB(iconPath % "alignLeft",         lambda : self.alignSnap("alignLeft",         self.useVisibleLayers(), self.allowAnnoAlign()))
+        self.alignCenterPB       = SquarePB(iconPath % "alignCenter",       lambda : self.alignSnap("alignCenter",       self.useVisibleLayers(), self.allowAnnoAlign()))
+        self.alignRightPB        = SquarePB(iconPath % "alignRight",        lambda : self.alignSnap("alignRight",        self.useVisibleLayers(), self.allowAnnoAlign()))
         
-        self.alignTopPB          = SquarePB(iconPath % "alignTop",          lambda : self.alignSnap("alignTop",          self.useVisibleLayers()))
-        self.alignMiddlePB       = SquarePB(iconPath % "alignMiddle",       lambda : self.alignSnap("alignMiddle",       self.useVisibleLayers()))
-        self.alignBottomPB       = SquarePB(iconPath % "alignBottom",       lambda : self.alignSnap("alignBottom",       self.useVisibleLayers()))
+        self.alignTopPB          = SquarePB(iconPath % "alignTop",          lambda : self.alignSnap("alignTop",          self.useVisibleLayers(), self.allowAnnoAlign()))
+        self.alignMiddlePB       = SquarePB(iconPath % "alignMiddle",       lambda : self.alignSnap("alignMiddle",       self.useVisibleLayers(), self.allowAnnoAlign()))
+        self.alignBottomPB       = SquarePB(iconPath % "alignBottom",       lambda : self.alignSnap("alignBottom",       self.useVisibleLayers(), self.allowAnnoAlign()))
 
-        self.alignTopLeftPB      = SquarePB(iconPath % "alignTopLeft",      lambda : self.alignSnap("alignTopLeft",      self.useVisibleLayers()))
-        self.alignTopCenterPB    = SquarePB(iconPath % "alignTopCenter",    lambda : self.alignSnap("alignTopCenter",    self.useVisibleLayers()))
-        self.alignTopRightPB     = SquarePB(iconPath % "alignTopRight",     lambda : self.alignSnap("alignTopRight",     self.useVisibleLayers()))
+        self.alignTopLeftPB      = SquarePB(iconPath % "alignTopLeft",      lambda : self.alignSnap("alignTopLeft",      self.useVisibleLayers(), self.allowAnnoAlign()))
+        self.alignTopCenterPB    = SquarePB(iconPath % "alignTopCenter",    lambda : self.alignSnap("alignTopCenter",    self.useVisibleLayers(), self.allowAnnoAlign()))
+        self.alignTopRightPB     = SquarePB(iconPath % "alignTopRight",     lambda : self.alignSnap("alignTopRight",     self.useVisibleLayers(), self.allowAnnoAlign()))
         
-        self.alignMiddleLeftPB   = SquarePB(iconPath % "alignMiddleLeft",   lambda : self.alignSnap("alignMiddleLeft",   self.useVisibleLayers()))
-        self.alignMiddleCenterPB = SquarePB(iconPath % "alignMiddleCenter", lambda : self.alignSnap("alignMiddleCenter", self.useVisibleLayers()))
-        self.alignMiddleRightPB  = SquarePB(iconPath % "alignMiddleRight",  lambda : self.alignSnap("alignMiddleRight",  self.useVisibleLayers()))
+        self.alignMiddleLeftPB   = SquarePB(iconPath % "alignMiddleLeft",   lambda : self.alignSnap("alignMiddleLeft",   self.useVisibleLayers(), self.allowAnnoAlign()))
+        self.alignMiddleCenterPB = SquarePB(iconPath % "alignMiddleCenter", lambda : self.alignSnap("alignMiddleCenter", self.useVisibleLayers(), self.allowAnnoAlign()))
+        self.alignMiddleRightPB  = SquarePB(iconPath % "alignMiddleRight",  lambda : self.alignSnap("alignMiddleRight",  self.useVisibleLayers(), self.allowAnnoAlign()))
         
-        self.alignBottomLeftPB   = SquarePB(iconPath % "alignBottomLeft",   lambda : self.alignSnap("alignBottomLeft",   self.useVisibleLayers()))
-        self.alignBottomCenterPB = SquarePB(iconPath % "alignBottomCenter", lambda : self.alignSnap("alignBottomCenter", self.useVisibleLayers()))
-        self.alignBottomRightPB  = SquarePB(iconPath % "alignBottomRight",  lambda : self.alignSnap("alignBottomRight",  self.useVisibleLayers()))
+        self.alignBottomLeftPB   = SquarePB(iconPath % "alignBottomLeft",   lambda : self.alignSnap("alignBottomLeft",   self.useVisibleLayers(), self.allowAnnoAlign()))
+        self.alignBottomCenterPB = SquarePB(iconPath % "alignBottomCenter", lambda : self.alignSnap("alignBottomCenter", self.useVisibleLayers(), self.allowAnnoAlign()))
+        self.alignBottomRightPB  = SquarePB(iconPath % "alignBottomRight",  lambda : self.alignSnap("alignBottomRight",  self.useVisibleLayers(), self.allowAnnoAlign()))
         
-        self.snapLeftPB          = SquarePB(iconPath % "snapLeft",          lambda : self.alignSnap("snapLeft",          self.useVisibleLayers()))
-        self.snapRightPB         = SquarePB(iconPath % "snapRight",         lambda : self.alignSnap("snapRight",         self.useVisibleLayers()))
+        self.snapLeftPB          = SquarePB(iconPath % "snapLeft",          lambda : self.alignSnap("snapLeft",          self.useVisibleLayers(), self.allowAnnoAlign()))
+        self.snapRightPB         = SquarePB(iconPath % "snapRight",         lambda : self.alignSnap("snapRight",         self.useVisibleLayers(), self.allowAnnoAlign()))
         
-        self.snapTopPB           = SquarePB(iconPath % "snapTop",           lambda : self.alignSnap("snapTop",           self.useVisibleLayers()))
-        self.snapBottomPB        = SquarePB(iconPath % "snapBottom",        lambda : self.alignSnap("snapBottom",        self.useVisibleLayers()))
-        self.snapDummyPB         = SquarePB(iconPath % "snapDummy",         lambda : self.alignSnap("snapDummy",         self.useVisibleLayers()))
+        self.snapTopPB           = SquarePB(iconPath % "snapTop",           lambda : self.alignSnap("snapTop",           self.useVisibleLayers(), self.allowAnnoAlign()))
+        self.snapBottomPB        = SquarePB(iconPath % "snapBottom",        lambda : self.alignSnap("snapBottom",        self.useVisibleLayers(), self.allowAnnoAlign()))
+        self.snapDummyPB         = SquarePB(iconPath % "snapDummy")
         
-        self.snapTopLeftPB       = SquarePB(iconPath % "snapTopLeft",       lambda : self.alignSnap("snapTopLeft",       self.useVisibleLayers()))
-        self.snapTopRightPB      = SquarePB(iconPath % "snapTopRight",      lambda : self.alignSnap("snapTopRight",      self.useVisibleLayers()))
+        self.snapTopLeftPB       = SquarePB(iconPath % "snapTopLeft",       lambda : self.alignSnap("snapTopLeft",       self.useVisibleLayers(), self.allowAnnoAlign()))
+        self.snapTopRightPB      = SquarePB(iconPath % "snapTopRight",      lambda : self.alignSnap("snapTopRight",      self.useVisibleLayers(), self.allowAnnoAlign()))
         
-        self.snapBottomLeftPB    = SquarePB(iconPath % "snapBottomLeft",    lambda : self.alignSnap("snapBottomLeft",    self.useVisibleLayers()))
-        self.snapBottomRightPB   = SquarePB(iconPath % "snapBottomRight",   lambda : self.alignSnap("snapBottomRight",   self.useVisibleLayers()))
+        self.snapBottomLeftPB    = SquarePB(iconPath % "snapBottomLeft",    lambda : self.alignSnap("snapBottomLeft",    self.useVisibleLayers(), self.allowAnnoAlign()))
+        self.snapBottomRightPB   = SquarePB(iconPath % "snapBottomRight",   lambda : self.alignSnap("snapBottomRight",   self.useVisibleLayers(), self.allowAnnoAlign()))
         
         self.distributeHPB       = SquarePB(iconPath % "distributeH",       lambda : self.distrubuteH(True, self.useVisibleLayers()))
         self.distributeVPB       = SquarePB(iconPath % "distributeV",       lambda : self.distrubuteV(True, self.useVisibleLayers()))
@@ -84,10 +83,9 @@ class AlignWidget(pya.QWidget):
         self.flipHorizontalPB    = SquarePB(iconPath % "flipHorizontal",    lambda : self.rotateFlipShape(  0,  True, False, self.rotateByEachCenter()))
         self.flipVerticalPB      = SquarePB(iconPath % "flipVertical",      lambda : self.rotateFlipShape(  0, False,  True, self.rotateByEachCenter()))
 
-        self.configUseAllRB      = pya.QRadioButton("Use all layers for align/snap")
-        self.configUseVisRB      = pya.QRadioButton("Use visible only for align/snap")
-        self.configRotAllRB      = pya.QRadioButton("Rotate about selection center")
-        self.configRotEachRB     = pya.QRadioButton("Rotate each shape center")
+        self.configUseVisCB      = pya.QCheckBox ("Use visible only for align/snap")
+        self.configUseAnnoCB     = pya.QCheckBox ("Allow Align to Ruler")
+        self.configRotEachCB     = pya.QCheckBox ("Rotate each shape center")
 
         self.donePB              = pya.QPushButton("Done")
 
@@ -100,15 +98,7 @@ class AlignWidget(pya.QWidget):
         self.bottomBarGrid       = pya.QGridLayout()
         self.grid                = pya.QGridLayout()
 
-        self.configAlignSnapRG   = pya.QButtonGroup()
-        self.configRotateRG      = pya.QButtonGroup()
         
-        self.configAlignSnapRG.addButton(self.configUseAllRB)
-        self.configAlignSnapRG.addButton(self.configUseVisRB)
-        self.configRotateRG.addButton(self.configRotAllRB)
-        self.configRotateRG.addButton(self.configRotEachRB)  
-        self.configUseAllRB.setChecked(True)
-        self.configRotAllRB.setChecked(True)
         
         self.donePB.clicked(lambda : self.close())
         
@@ -172,11 +162,11 @@ class AlignWidget(pya.QWidget):
         self.distGrid.addWidget(self.distributeVPB,        2, 0, 1, 1)
         self.distGrid.setRowStretch(3, 1) 
         
+                
         self.configGrid.addWidget(self.configLB,           0, 0, 1, 8)
-        self.configGrid.addWidget(self.configUseAllRB,     1, 0, 1, 4)
-        self.configGrid.addWidget(self.configUseVisRB,     2, 0, 1, 4)
-        self.configGrid.addWidget(self.configRotAllRB,     1, 3, 1, 4)
-        self.configGrid.addWidget(self.configRotEachRB,    2, 3, 1, 4)
+        self.configGrid.addWidget(self.configUseVisCB,     1, 0, 1, 4)
+        self.configGrid.addWidget(self.configUseAnnoCB,    2, 0, 1, 4)
+        self.configGrid.addWidget(self.configRotEachCB,    1, 3, 1, 4)
         self.configGrid.addWidget(self.donePB,             2, 7, 1, 1)
         
         uiDict = {
@@ -201,12 +191,22 @@ class AlignWidget(pya.QWidget):
         self.setLayout(self.grid)
         self.setWindowFlags(pya.Qt.WindowStaysOnTopHint)
         self.setWindowTitle ("Align Tool")
+    
+    def tempTest(self):
+        pass
         
+    def selectedAnnotationBox(self):
+        layoutView = mainWindow.current_view()
+        unit       = 1/layoutView.active_cellview().layout().dbu
+        box        = pya.DBox()
+        for a in layoutView.each_annotation_selected():
+            box += a.box()
+        return pya.Box() if box.empty() else pya.Box(box.p1*unit,box.p2*unit)
         
     def selectedShapes(self):
         layoutView = mainWindow.current_view()  
         return sorted([s for s in layoutView.each_object_selected()], key=lambda s: s.seq)
-    
+        
     def rotateAbout(self, o, rotate = 0, rx = 0, ry = 0, flipH = False, flipV = False):
         item      = (o.inst() if o.is_cell_inst() else o.shape)
         cx, cy    = item.bbox().center().x, item.bbox().center().y
@@ -249,11 +249,14 @@ class AlignWidget(pya.QWidget):
         layoutView = mainWindow.current_view()  
         return [    layerProp.layer_index() for layerProp in layoutView.each_layer() if layerProp.visible]
 
+    def allowAnnoAlign(self):
+        return self.configUseAnnoCB.isChecked()
+        
     def useVisibleLayers(self):
-        return self.configUseVisRB.isChecked()
+        return self.configUseVisCB.isChecked()
         
     def rotateByEachCenter(self):
-        return self.configRotEachRB.isChecked()
+        return self.configRotEachCB.isChecked()
         
     def instVisibleBBox(self, inst, useVisibleLayers = False):    
         box = pya.Box()      
@@ -309,8 +312,8 @@ class AlignWidget(pya.QWidget):
     def distrubuteV(self, centerPitch = True, useVisibleLayers = False):           
         self.distrubute(distributeH = False, distributeV = True, centerPitch = centerPitch, useVisibleLayers = useVisibleLayers)
         
-    def alignSnap(self, transText, useVisibleLayers = False):
-        firstBox   = pya.Box()
+    def alignSnap(self, transText, useVisibleLayers = False, alignAnnotation = True):
+        firstBox   = pya.Box() if not(alignAnnotation) else self.selectedAnnotationBox()
         layoutView = mainWindow.current_view()  
         layoutView.transaction(transText)
         try:
@@ -375,11 +378,11 @@ class AlignWidget(pya.QWidget):
         finally:
             layoutView.commit()
             
-            
+          
     def keyPressEvent(self, event):
         if event.type() == pya.QEvent.KeyPress:
             if event.key() in (pya.Qt.Key_Return, pya.Qt.Key_Escape, pya.Qt.Key_Enter):
-                self.close()
+                self.exit()
            
     
         
@@ -431,17 +434,19 @@ class SquarePB(pya.QPushButton):
 
 mainWindow    = pya.Application.instance().main_window()
 screenRect    = pya.QApplication.desktop().screenGeometry()
-def callWidget():
 
+def callAlignWidget():
     layoutView = mainWindow.current_view()  
     if layoutView:
         height        = screenRect.height
         width         = screenRect.width
         widget        = AlignWidget()
+
+        widget.show()
         x = mainWindow.pos.x + 25
         y = mainWindow.pos.y + mainWindow.height - widget.height - 50
+        
         widget.move(pya.QPoint(x, y))
-        widget.show()
     else:
         pass
               
@@ -450,8 +455,7 @@ def bindMenu():
     act       = pya.Action()
     act.title = "Align Tool"
     menu.insert_item("tools_menu.end", "Align Tool", act)
-    act.on_triggered(lambda : callWidget())
-bindMenu()
-
-</text>
+    act.on_triggered(lambda : callAlignWidget())
+    
+bindMenu()</text>
 </klayout-macro>
