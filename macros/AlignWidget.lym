@@ -429,7 +429,7 @@ class AlignWidget(pya.QWidget):
         
         
     def transByRuler(self):        
-
+        layoutView = mainWindow.current_view()
         if self.grabRuler:
             ruler = self.grabRuler
             trans = pya.DTrans(ruler.p2-ruler.p1)
@@ -498,10 +498,10 @@ class SquarePB(pya.QPushButton):
         self.hoverFunction = hoverFunction
 
     def enterEvent(self, event):
-        self.hoverFunction()
+        if not(self.hoverFunction) == None : self.hoverFunction()
         
     def leaveEvent(self, event):
-        self.hoverFunction()
+        if not(self.hoverFunction) == None : self.hoverFunction()
 
         
 mainWindow    = pya.Application.instance().main_window()
