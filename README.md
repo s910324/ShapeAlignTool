@@ -1,4 +1,4 @@
-# ShapeAlignTool 0.06
+# ShapeAlignTool
 
 ![image](https://github.com/s910324/ShapeAlignTool/assets/1561043/38759453-72ed-40c7-80b7-283d5524d2ee)
 
