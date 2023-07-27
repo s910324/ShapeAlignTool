@@ -27,8 +27,8 @@ class AlignWidget(pya.QWidget):
         self.initUI(alignUI, snapUI, rotateUI, booleanUI, distributeUI)
         
     def initUI(self, alignUI, snapUI, rotateUI, booleanUI, distributeUI):
-        columnSpacing            = 8
-        rowSpacing               = 8
+        columnSpacing            = 20
+        rowSpacing               = 20
         categorySpacing          = 20
         self.alignmentLB         = TitleLB("Alignment")
         self.snapLB              = TitleLB("Snap")
@@ -57,6 +57,8 @@ class AlignWidget(pya.QWidget):
         self.alignBottomCenterPB = SquarePB(iconPath % "alignBottomCenter", lambda : self.alignSnap("alignBottomCenter", self.useVisibleLayers(), self.allowAnnoAlign()))
         self.alignBottomRightPB  = SquarePB(iconPath % "alignBottomRight",  lambda : self.alignSnap("alignBottomRight",  self.useVisibleLayers(), self.allowAnnoAlign()))
         
+        self.transByRulerPB      = SquarePB(iconPath % "transByRuler",      lambda : self.transByRuler())
+         
         self.snapLeftPB          = SquarePB(iconPath % "snapLeft",          lambda : self.alignSnap("snapLeft",          self.useVisibleLayers(), self.allowAnnoAlign()))
         self.snapRightPB         = SquarePB(iconPath % "snapRight",         lambda : self.alignSnap("snapRight",         self.useVisibleLayers(), self.allowAnnoAlign()))
         
@@ -121,6 +123,9 @@ class AlignWidget(pya.QWidget):
         self.alignGrid.addWidget(self.alignLeftPB,         5, 2, 1, 1)
         self.alignGrid.addWidget(self.alignCenterPB,       5, 3, 1, 1)
         self.alignGrid.addWidget(self.alignRightPB,        5, 4, 1, 1)
+        self.alignGrid.addWidget(self.transByRulerPB,      5, 0, 1, 1)
+        
+        
         self.alignGrid.setColumnMinimumWidth(1, columnSpacing)
         self.alignGrid.setRowMinimumHeight(4, rowSpacing)        
         self.alignGrid.setRowStretch(6, 1)
@@ -377,12 +382,28 @@ class AlignWidget(pya.QWidget):
    
         finally:
             layoutView.commit()
-            
+    
+    def transByRuler(self):        
+        layoutView = mainWindow.current_view()
+        annotationList = list(layoutView.each_annotation_selected())
+        if len(annotationList) == 1:
+            ruler = annotationList[0]
+            trans = pya.DTrans(ruler.p2-ruler.p1)
+            layoutView.transaction("move by ruler")
+            try:
+                for o in self.selectedShapes():    
+                    (o.inst() if o.is_cell_inst() else o.shape).transform(trans)     
+            finally:
+                layoutView.commit()
+        else: 
+            loc = self.transByRulerPB.pos + self.pos
+            pya.QToolTip().showText(loc,"Select one Ruler for shape translation") 
           
+            
     def keyPressEvent(self, event):
         if event.type() == pya.QEvent.KeyPress:
             if event.key() in (pya.Qt.Key_Return, pya.Qt.Key_Escape, pya.Qt.Key_Enter):
-                self.exit()
+                self.close()
            
     
         
