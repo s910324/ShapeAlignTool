@@ -1,7 +1,14 @@
-# ShapeAlignTool
+# ShapeAlignTool 0.06
 
-![image](https://github.com/s910324/ShapeAlignTool/assets/1561043/3999d5e2-0425-4037-8a52-2f59dbbfdd6a)
+![image](https://github.com/s910324/ShapeAlignTool/assets/1561043/38759453-72ed-40c7-80b7-283d5524d2ee)
 
+----
+<b> Translate shape by ruler </b>
+
+[![](https://markdown-videos.vercel.app/youtube/OwIQwbtr9Ps?width=540&height=320)](https://youtu.be/OwIQwbtr9Ps)
+
+
+----
 Klayout shape alignment plugin, can be installed from app Package manager
 
 [Menu] --> [Tool] --> [Align Tool]
@@ -13,6 +20,7 @@ can be set bind with hot key "A" from setting menu
 * align shape to four corners
 * align shape to four border center.
 * align shape to ruler/annotation<b><sup>1<sup></b> (https://github.com/KLayout/klayout/issues/1375)
+* translate shape by ruler
 
 <b>shape snap</b>
 * snap to shape four corners
