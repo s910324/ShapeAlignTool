@@ -30,6 +30,8 @@ class AlignWidget(pya.QWidget):
         columnSpacing            = 20
         rowSpacing               = 20
         categorySpacing          = 20
+        self.grabRuler           = None
+        self.grabTheme           = {}
         self.alignmentLB         = TitleLB("Alignment")
         self.snapLB              = TitleLB("Snap")
         self.rotationLB          = TitleLB("Rotate")
@@ -57,7 +59,7 @@ class AlignWidget(pya.QWidget):
         self.alignBottomCenterPB = SquarePB(iconPath % "alignBottomCenter", lambda : self.alignSnap("alignBottomCenter", self.useVisibleLayers(), self.allowAnnoAlign()))
         self.alignBottomRightPB  = SquarePB(iconPath % "alignBottomRight",  lambda : self.alignSnap("alignBottomRight",  self.useVisibleLayers(), self.allowAnnoAlign()))
         
-        self.transByRulerPB      = SquarePB(iconPath % "transByRuler",      lambda : self.transByRuler())
+        self.transByRulerPB      = SquarePB(iconPath % "transByRuler",      lambda : self.transByRuler(), hoverFunction = lambda : self.attemptGrabRuler())
          
         self.snapLeftPB          = SquarePB(iconPath % "snapLeft",          lambda : self.alignSnap("snapLeft",          self.useVisibleLayers(), self.allowAnnoAlign()))
         self.snapRightPB         = SquarePB(iconPath % "snapRight",         lambda : self.alignSnap("snapRight",         self.useVisibleLayers(), self.allowAnnoAlign()))
@@ -103,7 +105,7 @@ class AlignWidget(pya.QWidget):
         
         
         self.donePB.clicked(lambda : self.close())
-        
+
         self.alignGrid.addWidget(self.alignmentLB,         0, 0, 1, 5)
         self.alignGrid.addWidget(self.alignTopLeftPB,      1, 2, 1, 1)
         self.alignGrid.addWidget(self.alignTopCenterPB,    1, 3, 1, 1)
@@ -383,11 +385,53 @@ class AlignWidget(pya.QWidget):
         finally:
             layoutView.commit()
     
-    def transByRuler(self):        
-        layoutView = mainWindow.current_view()
+    
+    def attemptGrabRuler(self):
+        if self.grabRuler : 
+            self.releaseTransRuler()
+        else : 
+            self.grabTransRuler()
+            
+    def grabTransRuler(self):
+        layoutView     = mainWindow.current_view()
         annotationList = list(layoutView.each_annotation_selected())
         if len(annotationList) == 1:
             ruler = annotationList[0]
+            valid = [
+                len(ruler.points) == 2,
+                ruler.segments()  == 1,
+                ruler.outline not in [
+                    pya.Annotation.OutlineRadius, 
+                    pya.Annotation.OutlineEllipse, 
+                    pya.Annotation.OutlineAngle
+                ],
+            ]
+
+            if all(valid):
+                self.grabRuler     = ruler
+                self.grabTheme     = {
+                    "fmt"     : ruler.fmt, 
+                    "outline" : ruler.outline, 
+                    "style"   : ruler.style
+                }
+                
+                ruler.fmt     = "move $X, $Y"
+                ruler.outline = pya.Annotation.OutlineDiag
+                ruler.style   = pya.Annotation.StyleArrowEnd
+    
+    def releaseTransRuler(self):
+        if self.grabRuler: 
+            self.grabRuler.fmt     = self.grabTheme["fmt"]
+            self.grabRuler.outline = self.grabTheme["outline"]
+            self.grabRuler.style   = self.grabTheme["style"]
+            self.grabTheme         = {}
+            self.grabRuler         = None
+        
+        
+    def transByRuler(self):        
+
+        if self.grabRuler:
+            ruler = self.grabRuler
             trans = pya.DTrans(ruler.p2-ruler.p1)
             layoutView.transaction("move by ruler")
             try:
@@ -397,7 +441,7 @@ class AlignWidget(pya.QWidget):
                 layoutView.commit()
         else: 
             loc = self.transByRulerPB.pos + self.pos
-            pya.QToolTip().showText(loc,"Select one Ruler for shape translation") 
+            pya.QToolTip().showText(loc,"Select one linear Ruler for shape translation") 
           
             
     def keyPressEvent(self, event):
@@ -423,7 +467,8 @@ class TitleLB(pya.QLabel):
         
 
 class SquarePB(pya.QPushButton):
-    def __init__(self, icon = None, bindFunction = None, parent = None):
+
+    def __init__(self, icon = None, bindFunction = None, hoverFunction = None, parent = None):
         super(SquarePB, self).__init__()    
         self.setFixedSize(50, 50)    
         self.setStyleSheet(
@@ -450,9 +495,15 @@ class SquarePB(pya.QPushButton):
             
         if bindFunction:
             self.clicked(bindFunction)
+        self.hoverFunction = hoverFunction
 
+    def enterEvent(self, event):
+        self.hoverFunction()
+        
+    def leaveEvent(self, event):
+        self.hoverFunction()
 
-
+        
 mainWindow    = pya.Application.instance().main_window()
 screenRect    = pya.QApplication.desktop().screenGeometry()
 
