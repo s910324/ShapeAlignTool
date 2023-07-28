@@ -37,3 +37,16 @@ can be set bind with hot key "A" from setting menu
 <b><sup>1<sup></b> if allow align to Ruler is enabled, selected ruler object(s) will be dim as major shape, which overrides the piority of selection order.
 this is due to the klayout currently does not provide selection seq order attribute to rulers.
 a feature resuest function: https://github.com/KLayout/klayout/issues/1375
+
+
+----
+<b> Translate shape by ruler</b>
+![image](https://github.com/s910324/ShapeAlignTool/assets/1561043/ab60eb85-8a63-4f9f-969f-66153c63c9df)
+
+
+- **(a)** Prepare shape
+- **(b)** Apply two point ruler from target shape to destination, translation direction will be the same as the ruler.
+- **(c)** Select target shape(s) and ruler for translation, selection order will not affect results.
+- **(d)** If a valid ruler is selected, the ruler will turn into a direction arrow while cursor hovers over the **translate shape by ruler** buttom
+- **(e)** Click the **translate shape by ruler** button to perform the alignment.
+Arc, ellipse or cross type rulers are not supported.
