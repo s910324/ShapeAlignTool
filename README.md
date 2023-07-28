@@ -3,12 +3,6 @@
 ![image](https://github.com/s910324/ShapeAlignTool/assets/1561043/38759453-72ed-40c7-80b7-283d5524d2ee)
 
 ----
-<b> Translate shape by ruler </b>
-
-[![](https://markdown-videos.vercel.app/youtube/OwIQwbtr9Ps?width=540&height=320)](https://youtu.be/OwIQwbtr9Ps)
-
-
-----
 Klayout shape alignment plugin, can be installed from app Package manager
 
 [Menu] --> [Tool] --> [Align Tool]
