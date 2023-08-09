@@ -21,22 +21,24 @@ import pya
 iconPath = str(os.path.dirname(__file__)) + "/Icon/%s.png"
 
 class AlignWidget(pya.QWidget):
-    def __init__(self, alignUI = True, snapUI = True, rotateUI = True, booleanUI = False, distributeUI = True, parent = None):
+    def __init__(self, alignUI = True, snapUI = True, rotateUI = True, booleanUI = False, distributeUI = True, utilUI = True, parent = None):
         super(AlignWidget, self).__init__(parent)  
         self.firstObj = None
-        self.initUI(alignUI, snapUI, rotateUI, booleanUI, distributeUI)
+        self.initUI(alignUI, snapUI, rotateUI, booleanUI, distributeUI, utilUI)
         
-    def initUI(self, alignUI, snapUI, rotateUI, booleanUI, distributeUI):
+    def initUI(self, alignUI, snapUI, rotateUI, booleanUI, distributeUI, utilUI):
         columnSpacing            = 20
         rowSpacing               = 20
         categorySpacing          = 20
         self.grabRuler           = None
+        self.grabShadows         = []
         self.grabTheme           = {}
         self.alignmentLB         = TitleLB("Alignment")
         self.snapLB              = TitleLB("Snap")
         self.rotationLB          = TitleLB("Rotate")
         self.booleanLB           = TitleLB("Boolean")
         self.distributeLB        = TitleLB("Distribute")
+        self.utilLB              = TitleLB("Utilities")
         self.configLB            = TitleLB("Configuration")       
         
         self.alignLeftPB         = SquarePB(iconPath % "alignLeft",         lambda : self.alignSnap("alignLeft",         self.useVisibleLayers(), self.allowAnnoAlign()))
@@ -66,7 +68,7 @@ class AlignWidget(pya.QWidget):
         
         self.snapTopPB           = SquarePB(iconPath % "snapTop",           lambda : self.alignSnap("snapTop",           self.useVisibleLayers(), self.allowAnnoAlign()))
         self.snapBottomPB        = SquarePB(iconPath % "snapBottom",        lambda : self.alignSnap("snapBottom",        self.useVisibleLayers(), self.allowAnnoAlign()))
-        self.snapDummyPB         = SquarePB(iconPath % "snapDummy")
+        self.snapDummyPB         = SquarePB(iconPath % "snapDummy",         lambda : self.dummy())
         
         self.snapTopLeftPB       = SquarePB(iconPath % "snapTopLeft",       lambda : self.alignSnap("snapTopLeft",       self.useVisibleLayers(), self.allowAnnoAlign()))
         self.snapTopRightPB      = SquarePB(iconPath % "snapTopRight",      lambda : self.alignSnap("snapTopRight",      self.useVisibleLayers(), self.allowAnnoAlign()))
@@ -87,6 +89,9 @@ class AlignWidget(pya.QWidget):
         self.flipHorizontalPB    = SquarePB(iconPath % "flipHorizontal",    lambda : self.rotateFlipShape(  0,  True, False, self.rotateByEachCenter()))
         self.flipVerticalPB      = SquarePB(iconPath % "flipVertical",      lambda : self.rotateFlipShape(  0, False,  True, self.rotateByEachCenter()))
 
+        self.drawShadowPB        = SquarePB(iconPath % "drawShadow",        lambda : self.grabSelectedShadow())
+        
+
         self.configUseVisCB      = pya.QCheckBox ("Use visible only for align/snap")
         self.configUseAnnoCB     = pya.QCheckBox ("Allow Align to Ruler")
         self.configRotEachCB     = pya.QCheckBox ("Rotate each shape center")
@@ -99,6 +104,7 @@ class AlignWidget(pya.QWidget):
         self.boolGrid            = pya.QGridLayout()
         self.distGrid            = pya.QGridLayout()
         self.configGrid          = pya.QGridLayout()
+        self.utilGrid            = pya.QGridLayout()
         self.bottomBarGrid       = pya.QGridLayout()
         self.grid                = pya.QGridLayout()
 
@@ -168,7 +174,10 @@ class AlignWidget(pya.QWidget):
         self.distGrid.addWidget(self.distributeHPB,        1, 0, 1, 1)
         self.distGrid.addWidget(self.distributeVPB,        2, 0, 1, 1)
         self.distGrid.setRowStretch(3, 1) 
-        
+
+        self.utilGrid.addWidget(self.utilLB,               0, 0, 1, 1)
+        self.utilGrid.addWidget(self.drawShadowPB,         1, 0, 1, 1)
+        self.utilGrid.setRowStretch(2, 1)         
                 
         self.configGrid.addWidget(self.configLB,           0, 0, 1, 8)
         self.configGrid.addWidget(self.configUseVisCB,     1, 0, 1, 4)
@@ -181,7 +190,8 @@ class AlignWidget(pya.QWidget):
             self.snapGrid   : snapUI, 
             self.rotateGrid : rotateUI, 
             self.boolGrid   : booleanUI, 
-            self.distGrid   : distributeUI
+            self.distGrid   : distributeUI,
+            self.utilGrid   : utilUI
         }
         
         uiCount = 0
@@ -198,8 +208,8 @@ class AlignWidget(pya.QWidget):
         self.setLayout(self.grid)
         self.setWindowFlags(pya.Qt.WindowStaysOnTopHint)
         self.setWindowTitle ("Align Tool")
-    
-    def tempTest(self):
+
+    def dummy(self):
         pass
         
     def selectedAnnotationBox(self):
@@ -264,7 +274,17 @@ class AlignWidget(pya.QWidget):
         
     def rotateByEachCenter(self):
         return self.configRotEachCB.isChecked()
-        
+    
+    def visibleBBox(self, o, useVisibleLayers = False):
+        box = pya.Box()
+
+        if useVisibleLayers and o.is_cell_inst():
+            for layer_index in self.visibleLayers():
+                box += o.inst().bbox(layer_index)
+        else:
+            box = (o.inst() if o.is_cell_inst() else o.shape).bbox()   
+        return box.transformed(o.trans())  
+         
     def instVisibleBBox(self, inst, useVisibleLayers = False):    
         box = pya.Box()      
         if useVisibleLayers:
@@ -272,41 +292,46 @@ class AlignWidget(pya.QWidget):
                 box += inst.bbox(layer_index)
         else:
             box = inst.bbox()   
-        return box                 
+        
+        return box               
 
     def distrubute(self, distributeH = False, distributeV = False, centerPitch = True, useVisibleLayers = False):
-        layoutView   = mainWindow.current_view()  
-        sortedShapes = sorted(self.selectedShapes(), key = lambda o : (self.instVisibleBBox(o.inst(), useVisibleLayers) if o.is_cell_inst() else o.shape.bbox()).center().x)
-        oFirst       = sortedShapes[ 0]
-        oLast        = sortedShapes[-1]
-        oFirstBox    = self.instVisibleBBox(oFirst.inst(), useVisibleLayers) if oFirst.is_cell_inst() else oFirst.shape.bbox()
-        oLastBox     = self.instVisibleBBox(oLast.inst(),  useVisibleLayers) if  oLast.is_cell_inst() else  oLast.shape.bbox()
-        oFirstBox    = oFirstBox.transformed(pya.Trans(oFirst.trans().disp.x, oFirst.trans().disp.y))
-        oLastBox     = oLastBox.transformed( pya.Trans(oLast.trans().disp.x,  oLast.trans().disp.y))
-        oFirstCX     = oFirstBox.center().x
-        oLastCX      = oLastBox.center().x
-        oFirstCY     = oFirstBox.center().y
-        oLastCY      = oLastBox.center().y
-        objCount     = len(sortedShapes)
-        sepprationH  = int((oLastCX - oFirstCX)/(objCount-1))
-        sepprationV  = int((oLastCY - oFirstCY)/(objCount-1))
+        layoutView    = mainWindow.current_view()  
+        sortedShapesH = sorted(self.selectedShapes(), key = lambda o : self.visibleBBox(o, useVisibleLayers).center().x)
+        sortedShapesV = sorted(self.selectedShapes(), key = lambda o : self.visibleBBox(o, useVisibleLayers).center().y)
+
+        oFirstH       = sortedShapesH[ 0]
+        oLastH        = sortedShapesH[-1]
+        oFirstV       = sortedShapesV[ 0]
+        oLastV        = sortedShapesV[-1]       
+        oFirstBoxH    = self.visibleBBox(oFirstH, useVisibleLayers)
+        oLastBoxH     = self.visibleBBox(oLastH,  useVisibleLayers)
+        oFirstBoxV    = self.visibleBBox(oFirstV, useVisibleLayers)
+        oLastBoxV     = self.visibleBBox(oLastV,  useVisibleLayers)
+        oFirstCX      = oFirstBoxH.center().x
+        oLastCX       = oLastBoxH.center().x
+        oFirstCY      = oFirstBoxV.center().y
+        oLastCY       = oLastBoxV.center().y
+        objCount      = len(sortedShapesH)
+        sepprationH   = int((oLastCX - oFirstCX)/(objCount-1))
+        sepprationV   = int((oLastCY - oFirstCY)/(objCount-1))
         
+
         layoutView.transaction("ditribute %s%s" % (("H" if distributeH else ""), ("V" if distributeV else "")))
         try:
-            
-            for index, o in enumerate(sortedShapes):
-                item   = (o.inst() if o.is_cell_inst() else o.shape)
-                box    = (self.instVisibleBBox(o.inst(), useVisibleLayers) if o.is_cell_inst() else o.shape.bbox())
-                box    = box.transformed(pya.Trans(o.trans().disp.x, o.trans().disp.y))
-                shiftH = oFirstCX + (index * sepprationH) - box.center().x
-                shiftV = oFirstCY + (index * sepprationV) - box.center().y
-                transH = pya.Trans(shiftH, 0)
-                transV = pya.Trans(0,      shiftV)
+            if distributeH:
+                for index, o in enumerate(sortedShapesH):
+                    item   = (o.inst() if o.is_cell_inst() else o.shape)
+                    box    = self.visibleBBox(o,   useVisibleLayers)
+                    shiftH = oFirstCX + (index * sepprationH) - box.center().x
+                    item.transform(pya.Trans(shiftH, 0))
                 
-                if distributeH:
-                    item.transform(transH)
-                if distributeV:
-                    item.transform(transV)
+            if distributeV:
+                for index, o in enumerate(sortedShapesV):
+                    item   = (o.inst() if o.is_cell_inst() else o.shape)
+                    box    = self.visibleBBox(o,   useVisibleLayers)
+                    shiftV = oFirstCY + (index * sepprationV) - box.center().y
+                    item.transform(pya.Trans(0, shiftV))
                 
         finally:
             layoutView.commit()
@@ -318,22 +343,27 @@ class AlignWidget(pya.QWidget):
         
     def distrubuteV(self, centerPitch = True, useVisibleLayers = False):           
         self.distrubute(distributeH = False, distributeV = True, centerPitch = centerPitch, useVisibleLayers = useVisibleLayers)
-        
+    
+    def translateGlobal(self, o, x, y):
+        otrans = o.trans()
+        invert = otrans.inverted() 
+        move   = pya.Trans(x, y)
+        revert = otrans
+        return (invert * move * revert)
+
     def alignSnap(self, transText, useVisibleLayers = False, alignAnnotation = True):
         firstBox   = pya.Box() if not(alignAnnotation) else self.selectedAnnotationBox()
         layoutView = mainWindow.current_view()  
+        unit       = layoutView.active_cellview().layout().dbu
         layoutView.transaction(transText)
         try:
             for o in self.selectedShapes(): 
-    
+                
                 if firstBox.empty():
-                    firstBox = self.instVisibleBBox(o.inst(), useVisibleLayers) if o.is_cell_inst() else o.shape.bbox()
-                    firstBox = firstBox.transformed(pya.Trans(o.trans().disp.x, o.trans().disp.y))
-    
+                    firstBox  = self.visibleBBox(o, useVisibleLayers)
                 else:
-                    secondBox         = self.instVisibleBBox(o.inst(), useVisibleLayers) if o.is_cell_inst() else o.shape.bbox()
-                    secondBox         = secondBox.transformed(pya.Trans(o.trans().disp.x, o.trans().disp.y))
-                    
+                    secondBox = self.visibleBBox(o, useVisibleLayers)
+                                            
                     transXAlignLeft   = firstBox.left       - secondBox.left       
                     transXAlignCenter = firstBox.center().x - secondBox.center().x
                     transXAlignright  = firstBox.right      - secondBox.right      
@@ -347,38 +377,38 @@ class AlignWidget(pya.QWidget):
                     
                     transYSnapTop     = firstBox.top        - secondBox.bottom     
                     transYSnapBottom  = firstBox.bottom     - secondBox.top        
-                                               
+                       
                     transDict = {
-                        "alignTopLeft"      : pya.Trans(transXAlignLeft,   transYAlignTop),
-                        "alignTopCenter"    : pya.Trans(transXAlignCenter, transYAlignTop),
-                        "alignTopRight"     : pya.Trans(transXAlignright,  transYAlignTop),
+                        "alignTopLeft"      : self.translateGlobal( o, transXAlignLeft,   transYAlignTop),
+                        "alignTopCenter"    : self.translateGlobal( o, transXAlignCenter, transYAlignTop),
+                        "alignTopRight"     : self.translateGlobal( o, transXAlignright,  transYAlignTop),
     
-                        "alignMiddleLeft"   : pya.Trans(transXAlignLeft,   transYAlignMiddle),
-                        "alignMiddleCenter" : pya.Trans(transXAlignCenter, transYAlignMiddle),
-                        "alignMiddleRight"  : pya.Trans(transXAlignright,  transYAlignMiddle),
+                        "alignMiddleLeft"   : self.translateGlobal( o, transXAlignLeft,   transYAlignMiddle),
+                        "alignMiddleCenter" : self.translateGlobal( o, transXAlignCenter, transYAlignMiddle),
+                        "alignMiddleRight"  : self.translateGlobal( o, transXAlignright,  transYAlignMiddle),
                         
-                        "alignBottomLeft"   : pya.Trans(transXAlignLeft,   transYAlignBottom),
-                        "alignBottomCenter" : pya.Trans(transXAlignCenter, transYAlignBottom),
-                        "alignBottomRight"  : pya.Trans(transXAlignright,  transYAlignBottom),
+                        "alignBottomLeft"   : self.translateGlobal( o, transXAlignLeft,   transYAlignBottom),
+                        "alignBottomCenter" : self.translateGlobal( o, transXAlignCenter, transYAlignBottom),
+                        "alignBottomRight"  : self.translateGlobal( o, transXAlignright,  transYAlignBottom),
                                       
-                        "alignTop"          : pya.Trans(0,                 transYAlignTop),                    
-                        "alignMiddle"       : pya.Trans(0,                 transYAlignMiddle),
-                        "alignBottom"       : pya.Trans(0,                 transYAlignBottom),
+                        "alignTop"          : self.translateGlobal( o, 0,                 transYAlignTop),                    
+                        "alignMiddle"       : self.translateGlobal( o, 0,                 transYAlignMiddle),
+                        "alignBottom"       : self.translateGlobal( o, 0,                 transYAlignBottom),
                         
-                        "alignLeft"         : pya.Trans(transXAlignLeft,   0),
-                        "alignCenter"       : pya.Trans(transXAlignCenter, 0),
-                        "alignRight"        : pya.Trans(transXAlignright,  0),
+                        "alignLeft"         : self.translateGlobal( o, transXAlignLeft,   0),
+                        "alignCenter"       : self.translateGlobal( o, transXAlignCenter, 0),
+                        "alignRight"        : self.translateGlobal( o, transXAlignright,  0),
                         
-                        "snapTop"           : pya.Trans(0,                 transYSnapTop),
-                        "snapBottom"        : pya.Trans(0,                 transYSnapBottom),
+                        "snapTop"           : self.translateGlobal( o, 0,                 transYSnapTop),
+                        "snapBottom"        : self.translateGlobal( o, 0,                 transYSnapBottom),
                         
-                        "snapLeft"          : pya.Trans(transXSnapLeft,    0),
-                        "snapRight"         : pya.Trans(transXSnapRight,   0),
+                        "snapLeft"          : self.translateGlobal( o, transXSnapLeft,    0),
+                        "snapRight"         : self.translateGlobal( o, transXSnapRight,   0),
     
-                        "snapTopLeft"       : pya.Trans(transXSnapLeft,    transYSnapTop),
-                        "snapBottomLeft"    : pya.Trans(transXSnapLeft,    transYSnapBottom),
-                        "snapTopRight"      : pya.Trans(transXSnapRight,   transYSnapTop),
-                        "snapBottomRight"   : pya.Trans(transXSnapRight,   transYSnapBottom)              
+                        "snapTopLeft"       : self.translateGlobal( o, transXSnapLeft,    transYSnapTop),
+                        "snapBottomLeft"    : self.translateGlobal( o, transXSnapLeft,    transYSnapBottom),
+                        "snapTopRight"      : self.translateGlobal( o, transXSnapRight,   transYSnapTop),
+                        "snapBottomRight"   : self.translateGlobal( o, transXSnapRight,   transYSnapBottom)              
                     }
                     (o.inst() if o.is_cell_inst() else o.shape).transform(transDict[transText])
    
@@ -387,10 +417,17 @@ class AlignWidget(pya.QWidget):
     
     
     def attemptGrabRuler(self):
-        if self.grabRuler : 
+        if self.grabRuler: 
             self.releaseTransRuler()
+            self.releaseGrabShadows()
+            
         else : 
             self.grabTransRuler()
+            ruler  = self.grabRuler
+            if ruler:
+                vector = (ruler.p2-ruler.p1)
+                self.grabSelectedShadow(vector.x, vector.y)
+
             
     def grabTransRuler(self):
         layoutView     = mainWindow.current_view()
@@ -425,25 +462,90 @@ class AlignWidget(pya.QWidget):
             self.grabRuler.outline = self.grabTheme["outline"]
             self.grabRuler.style   = self.grabTheme["style"]
             self.grabTheme         = {}
-            self.grabRuler         = None
+        self.grabRuler = None
         
         
     def transByRuler(self):        
         layoutView = mainWindow.current_view()
-        if self.grabRuler:
-            ruler = self.grabRuler
-            trans = pya.DTrans(ruler.p2-ruler.p1)
+        unit       = layoutView.active_cellview().layout().dbu
+        
+        if self.grabRuler and self.selectedShapes():
+            ruler  = self.grabRuler
+            vector = (ruler.p2-ruler.p1)
+            x      = int(vector.x / unit)
+            y      = int(vector.y / unit)
+            trans  = pya.DTrans(ruler.p2-ruler.p1)
             layoutView.transaction("move by ruler")
             try:
                 for o in self.selectedShapes():    
+                    trans = self.translateGlobal(o, x, y)
                     (o.inst() if o.is_cell_inst() else o.shape).transform(trans)     
             finally:
                 layoutView.commit()
         else: 
             loc = self.transByRulerPB.pos + self.pos
-            pya.QToolTip().showText(loc,"Select one linear Ruler for shape translation") 
-          
+            pya.QToolTip().showText(
+                loc,
+                "Select one linear Ruler for shape translation\n"+ \
+                "Select atleast one object for shape translation."
+            ) 
+    def drawShadow(self, points = []):
+        shadow = pya.Annotation()
+        if points:
+            if not(points[0] == points[-1]):
+                points.append(points[0])
+            shadow.outline = pya.Annotation.OutlineDiag
+            shadow.style   = pya.Annotation.StyleLine
+            shadow.fmt     = ""
+            shadow.points  = points
+        return shadow
+        
+        
+    def grabShapeShadow(self, o): 
+        layoutView  = mainWindow.current_view()
+        unit        = layoutView.active_cellview().layout().dbu
+        box         = (o.inst() if o.is_cell_inst() else o.shape).bbox()
+        shapeShadow = pya.Annotation()
+        boxShadow   = pya.Annotation()
+        
+
+        if not(o.is_cell_inst()):
+            box         = box.transformed(o.trans())
+            shapePtList = [pya.DPoint(p.x * unit, p.y * unit) for p in o.shape.polygon.each_point_hull()]
+            shapeShadow = self.drawShadow(shapePtList)
+            shapeShadow = shapeShadow.transformed(o.trans().to_itrans(unit))
             
+        boxPtList = [
+            pya.DPoint(box.p1.x * unit, box.p1.y * unit), 
+            pya.DPoint(box.p2.x * unit, box.p1.y * unit), 
+            pya.DPoint(box.p2.x * unit, box.p2.y * unit), 
+            pya.DPoint(box.p1.x * unit, box.p2.y * unit)
+        ]
+        
+        boxShadow = self.drawShadow(boxPtList)
+        return [boxShadow] if o.is_cell_inst() else [shapeShadow]
+    
+    def grabSelectedShadow(self, offset_x=0, offset_y=0): 
+        layoutView = mainWindow.current_view()
+        shapeArray = self.selectedShapes()
+
+        if shapeArray:
+            for o in shapeArray:
+                for shadow in self.grabShapeShadow(o):
+                    shadow = shadow.transformed(pya.DCplxTrans(1, 0, False, offset_x, offset_y))
+                    self.grabShadows.append(shadow)
+                    layoutView.insert_annotation(shadow)
+
+
+    def releaseGrabShadows(self):
+        layoutView = mainWindow.current_view()
+        for shadow in self.grabShadows:
+            layoutView.erase_annotation(shadow.id())
+            shadow.detach()
+            shadow.delete()
+        self.grabShadows = []
+
+                    
     def keyPressEvent(self, event):
         if event.type() == pya.QEvent.KeyPress:
             if event.key() in (pya.Qt.Key_Return, pya.Qt.Key_Escape, pya.Qt.Key_Enter):
