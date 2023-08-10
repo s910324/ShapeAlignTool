@@ -38,6 +38,9 @@ The app can be bined to hot key through setup dialog
 * align shape to four border center.
 * align shape to ruler/annotation<b><sup>1<sup></b> (https://github.com/KLayout/klayout/issues/1375)
 * translate shape by ruler
+<b><sup>1<sup></b> if allow align to Ruler is enabled, selected ruler object(s) will be dim as major shape, which overrides the piority of selection order.
+this is due to the klayout currently does not provide selection seq order attribute to rulers.
+a feature resuest function: https://github.com/KLayout/klayout/issues/1375
 
 ### Shape snap
 <p align="center">
@@ -58,10 +61,6 @@ The app can be bined to hot key through setup dialog
 
 ### Shape distribution
 * distribute shapes horizontally and vertically by center pitch
-
-<b><sup>1<sup></b> if allow align to Ruler is enabled, selected ruler object(s) will be dim as major shape, which overrides the piority of selection order.
-this is due to the klayout currently does not provide selection seq order attribute to rulers.
-a feature resuest function: https://github.com/KLayout/klayout/issues/1375
 
 ### Translate shape by ruler
 <p align="center">
