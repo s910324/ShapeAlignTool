@@ -28,8 +28,7 @@ The app can be bined to hot key through setup dialog
 * Translate shape by ruler
 * Utilities - Shape shadow
 
-# Bugs
-* Translate cell instances currently is not working properly
+
 
 ### Shape alignment
 <p align="center">
@@ -81,6 +80,9 @@ Arc, ellipse or cross type rulers are not supported.
 <p align="center">
 <img align="middle" src="https://github.com/s910324/ShapeAlignTool/assets/1561043/b2ea5a4c-88f8-4c4e-a14d-b7cb30792560" alt="shadow" width="800"/>
 </p>
+
+# Bugs
+* Translate cell instances currently is not working properly
 * Shadow, trace the border of selected objects using annotation, shadow can be cleared by clear ruler function.
 
 
