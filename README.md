@@ -1,7 +1,8 @@
 # ShapeAlignTool
 
+
 <p align="center">
-<img align="middle" src="https://github.com/s910324/ShapeAlignTool/assets/1561043/38759453-72ed-40c7-80b7-283d5524d2ee" alt="Screen shot" width="800"/>
+<img align="middle" src="https://github.com/s910324/ShapeAlignTool/assets/1561043/96bc0e27-58b0-45ce-80a1-892e9b9ade8e" alt="Screen shot" width="800"/>
 </p>
 
 # Installation and setup
