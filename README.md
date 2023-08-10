@@ -28,6 +28,8 @@ The app can be bined to hot key through setup dialog
 * Translate shape by ruler
 * Utilities - Shape shadow
 
+# Bugs
+* Translate cell instances currently is not working properly
 
 ### Shape alignment
 <p align="center">
