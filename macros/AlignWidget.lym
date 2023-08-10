@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <klayout-macro>
  <description/>
- <version/>
+ <version>0.10</version>
  <category>pymacros</category>
  <prolog/>
  <epilog/>
