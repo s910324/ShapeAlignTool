@@ -81,8 +81,6 @@ Arc, ellipse or cross type rulers are not supported.
 <img align="middle" src="https://github.com/s910324/ShapeAlignTool/assets/1561043/b2ea5a4c-88f8-4c4e-a14d-b7cb30792560" alt="shadow" width="800"/>
 </p>
 
-# Bugs
-* Translate cell instances currently is not working properly
 * Shadow, trace the border of selected objects using annotation, shadow can be cleared by clear ruler function.
 
 
