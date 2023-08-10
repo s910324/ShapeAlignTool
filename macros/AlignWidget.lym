@@ -39,7 +39,7 @@ class AlignWidget(pya.QWidget):
         self.booleanLB           = TitleLB("Boolean")
         self.distributeLB        = TitleLB("Distribute")
         self.utilLB              = TitleLB("Utilities")
-        self.configLB            = TitleLB("Configuration")       
+        self.configLB            = TitleLB("Configuration")
         
         self.alignLeftPB         = SquarePB(iconPath % "alignLeft",         lambda : self.alignSnap("alignLeft",         self.useVisibleLayers(), self.allowAnnoAlign()))
         self.alignCenterPB       = SquarePB(iconPath % "alignCenter",       lambda : self.alignSnap("alignCenter",       self.useVisibleLayers(), self.allowAnnoAlign()))
@@ -90,7 +90,6 @@ class AlignWidget(pya.QWidget):
         self.flipVerticalPB      = SquarePB(iconPath % "flipVertical",      lambda : self.rotateFlipShape(  0, False,  True, self.rotateByEachCenter()))
 
         self.drawShadowPB        = SquarePB(iconPath % "drawShadow",        lambda : self.grabSelectedShadow())
-        
 
         self.configUseVisCB      = pya.QCheckBox ("Use visible only for align/snap")
         self.configUseAnnoCB     = pya.QCheckBox ("Allow Align to Ruler")
@@ -274,26 +273,24 @@ class AlignWidget(pya.QWidget):
         
     def rotateByEachCenter(self):
         return self.configRotEachCB.isChecked()
-    
-    def visibleBBox(self, o, useVisibleLayers = False):
-        box = pya.Box()
 
-        if useVisibleLayers and o.is_cell_inst():
-            for layer_index in self.visibleLayers():
-                box += o.inst().bbox(layer_index)
+    def visibleBBox(self, o, useVisibleLayers = False):
+        layoutView  = mainWindow.current_view()
+        box         = pya.Box()    
+
+        if not(o.is_cell_inst()):
+            box = o.shape.bbox()
+            box = box.transformed(o.trans())
+            
         else:
-            box = (o.inst() if o.is_cell_inst() else o.shape).bbox()   
-        return box.transformed(o.trans())  
-         
-    def instVisibleBBox(self, inst, useVisibleLayers = False):    
-        box = pya.Box()      
-        if useVisibleLayers:
-            for layer_index in self.visibleLayers():
-                box += inst.bbox(layer_index)
-        else:
-            box = inst.bbox()   
-        
-        return box               
+            if not(useVisibleLayers):
+                box = o.inst().bbox()
+            else:        
+                for layer_index in self.visibleLayers():
+                    box += o.inst().bbox(layer_index)  
+                     
+        return box 
+
 
     def distrubute(self, distributeH = False, distributeV = False, centerPitch = True, useVisibleLayers = False):
         layoutView    = mainWindow.current_view()  
@@ -339,17 +336,22 @@ class AlignWidget(pya.QWidget):
                 
     def distrubuteH(self, centerPitch = True, useVisibleLayers = False):
         self.distrubute(distributeH = True, distributeV = False, centerPitch = centerPitch, useVisibleLayers = useVisibleLayers)
-        
-        
+
     def distrubuteV(self, centerPitch = True, useVisibleLayers = False):           
         self.distrubute(distributeH = False, distributeV = True, centerPitch = centerPitch, useVisibleLayers = useVisibleLayers)
     
     def translateGlobal(self, o, x, y):
         otrans = o.trans()
-        invert = otrans.inverted() 
-        move   = pya.Trans(x, y)
-        revert = otrans
-        return (invert * move * revert)
+        result = None
+        if o.is_cell_inst():
+            result = pya.Trans(x, y)
+            
+        else:
+            invert = otrans.inverted() 
+            move   = pya.Trans(x, y)
+            revert = otrans
+            result = (invert * move * revert)
+        return result
 
     def alignSnap(self, transText, useVisibleLayers = False, alignAnnotation = True):
         firstBox   = pya.Box() if not(alignAnnotation) else self.selectedAnnotationBox()
@@ -489,6 +491,7 @@ class AlignWidget(pya.QWidget):
                 "Select one linear Ruler for shape translation\n"+ \
                 "Select atleast one object for shape translation."
             ) 
+            
     def drawShadow(self, points = []):
         shadow = pya.Annotation()
         if points:
@@ -499,30 +502,39 @@ class AlignWidget(pya.QWidget):
             shadow.fmt     = ""
             shadow.points  = points
         return shadow
+    
+    def drawBBoxShadow(self, box):
+        layoutView = mainWindow.current_view()
+        unit       = layoutView.active_cellview().layout().dbu
+        boxPtList  = [
+            pya.DPoint(box.p1.x * unit, box.p1.y * unit), 
+            pya.DPoint(box.p2.x * unit, box.p1.y * unit), 
+            pya.DPoint(box.p2.x * unit, box.p2.y * unit), 
+            pya.DPoint(box.p1.x * unit, box.p2.y * unit)
+        ]
+        return self.drawShadow(boxPtList)
         
-        
+    def drawShapeShadow(self, o):
+        layoutView  = mainWindow.current_view()
+        unit        = layoutView.active_cellview().layout().dbu
+        shapePtList = [pya.DPoint(p.x * unit, p.y * unit) for p in o.shape.polygon.each_point_hull()]
+        return self.drawShadow(shapePtList)
+    
+
+               
     def grabShapeShadow(self, o): 
         layoutView  = mainWindow.current_view()
         unit        = layoutView.active_cellview().layout().dbu
         box         = (o.inst() if o.is_cell_inst() else o.shape).bbox()
         shapeShadow = pya.Annotation()
         boxShadow   = pya.Annotation()
-        
 
         if not(o.is_cell_inst()):
             box         = box.transformed(o.trans())
-            shapePtList = [pya.DPoint(p.x * unit, p.y * unit) for p in o.shape.polygon.each_point_hull()]
-            shapeShadow = self.drawShadow(shapePtList)
+            shapeShadow = self.drawShapeShadow(o)
             shapeShadow = shapeShadow.transformed(o.trans().to_itrans(unit))
-            
-        boxPtList = [
-            pya.DPoint(box.p1.x * unit, box.p1.y * unit), 
-            pya.DPoint(box.p2.x * unit, box.p1.y * unit), 
-            pya.DPoint(box.p2.x * unit, box.p2.y * unit), 
-            pya.DPoint(box.p1.x * unit, box.p2.y * unit)
-        ]
         
-        boxShadow = self.drawShadow(boxPtList)
+        boxShadow = self.drawBBoxShadow(box)
         return [boxShadow] if o.is_cell_inst() else [shapeShadow]
     
     def grabSelectedShadow(self, offset_x=0, offset_y=0): 
