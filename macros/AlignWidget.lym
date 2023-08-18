@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <klayout-macro>
  <description/>
- <version>0.10</version>
+ <version/>
  <category>pymacros</category>
  <prolog/>
  <epilog/>
@@ -209,6 +209,10 @@ class AlignWidget(pya.QWidget):
         self.setWindowTitle ("Align Tool")
 
     def dummy(self):
+        print("dummy")
+        layoutView = mainWindow.current_view()
+        for o in layoutView.each_object_selected():
+            print(o.is_cell_inst())
         pass
         
     def selectedAnnotationBox(self):
@@ -280,15 +284,15 @@ class AlignWidget(pya.QWidget):
 
         if not(o.is_cell_inst()):
             box = o.shape.bbox()
-            box = box.transformed(o.trans())
-            
+           
         else:
             if not(useVisibleLayers):
                 box = o.inst().bbox()
             else:        
                 for layer_index in self.visibleLayers():
                     box += o.inst().bbox(layer_index)  
-                     
+                    
+        box = box.transformed(o.trans())     
         return box 
 
 
@@ -343,14 +347,14 @@ class AlignWidget(pya.QWidget):
     def translateGlobal(self, o, x, y):
         otrans = o.trans()
         result = None
-        if o.is_cell_inst():
-            result = pya.Trans(x, y)
+        #if o.is_cell_inst():
+        #    result = pya.Trans(x, y)
             
-        else:
-            invert = otrans.inverted() 
-            move   = pya.Trans(x, y)
-            revert = otrans
-            result = (invert * move * revert)
+        #else:
+        invert = otrans.inverted() 
+        move   = pya.Trans(x, y)
+        revert = otrans
+        result = (invert * move * revert)
         return result
 
     def alignSnap(self, transText, useVisibleLayers = False, alignAnnotation = True):
@@ -528,9 +532,9 @@ class AlignWidget(pya.QWidget):
         box         = (o.inst() if o.is_cell_inst() else o.shape).bbox()
         shapeShadow = pya.Annotation()
         boxShadow   = pya.Annotation()
-
+        box         = box.transformed(o.trans())
+       
         if not(o.is_cell_inst()):
-            box         = box.transformed(o.trans())
             shapeShadow = self.drawShapeShadow(o)
             shapeShadow = shapeShadow.transformed(o.trans().to_itrans(unit))
         
