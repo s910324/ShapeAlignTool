@@ -2,8 +2,9 @@
 
 
 <p align="center">
-<img align="middle" src="https://github.com/s910324/ShapeAlignTool/assets/1561043/96bc0e27-58b0-45ce-80a1-892e9b9ade8e" alt="Screen shot" width="800"/>
+<img align="middle" src="https://github.com/s910324/ShapeAlignTool/assets/1561043/54cd989d-4351-4ed5-ad35-4e73d2868d1d" alt="Screen shot" width="800"/>
 </p>
+
 
 # Installation and setup
 
@@ -27,6 +28,7 @@ The app can be bined to hot key through setup dialog
 * Shape distribution
 * Translate shape by ruler
 * Utilities - Shape shadow
+* Auto switch to dark/light theme based on Klayout UI color
 
 
 
