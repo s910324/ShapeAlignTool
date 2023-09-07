@@ -18,15 +18,20 @@
  <text>import os
 import pya
 
-iconPath = str(os.path.dirname(__file__)) + "/Icon/%s.png"
+iconPackPath = str(os.path.dirname(__file__)) + "/AlignWidgetIcon/"
 
 class AlignWidget(pya.QWidget):
     def __init__(self, alignUI = True, snapUI = True, rotateUI = True, booleanUI = False, distributeUI = True, utilUI = True, parent = None):
         super(AlignWidget, self).__init__(parent)  
+        bgColor  = pya.QWidget().palette.color(pya.QWidget().backgroundRole)
+        colorWt  = sum([bgColor.red, bgColor.green, bgColor.blue])
+        iconPath = iconPackPath + ("DarkIcon" if  colorWt &lt; 256 else "LightIcon") + "/%s.png"
+        print(iconPath)
         self.firstObj = None
-        self.initUI(alignUI, snapUI, rotateUI, booleanUI, distributeUI, utilUI)
+        self.initUI(iconPath, alignUI, snapUI, rotateUI, booleanUI, distributeUI, utilUI)
+
         
-    def initUI(self, alignUI, snapUI, rotateUI, booleanUI, distributeUI, utilUI):
+    def initUI(self, iconPath, alignUI, snapUI, rotateUI, booleanUI, distributeUI, utilUI):
         columnSpacing            = 20
         rowSpacing               = 20
         categorySpacing          = 20
@@ -209,10 +214,6 @@ class AlignWidget(pya.QWidget):
         self.setWindowTitle ("Align Tool")
 
     def dummy(self):
-        print("dummy")
-        layoutView = mainWindow.current_view()
-        for o in layoutView.each_object_selected():
-            print(o.is_cell_inst())
         pass
         
     def selectedAnnotationBox(self):
@@ -577,7 +578,7 @@ class TitleLB(pya.QLabel):
         self.setStyleSheet(
         """
             QLabel{
-                background-color : #dfdfdf;
+                background-color : rgba(180, 180, 180, 30);
             }
         """
         )
@@ -592,7 +593,7 @@ class SquarePB(pya.QPushButton):
         self.setStyleSheet(
         """
             QPushButton {
-                background: #efefef;
+                background: rgba(239, 239, 239, 10);
                 border: 1px solid transparent;
                 border-radius: 2px;
             }
@@ -647,5 +648,5 @@ def bindMenu():
     menu.insert_item("tools_menu.end", "Align Tool", act)
     act.on_triggered(lambda : callAlignWidget())
     
-bindMenu()</text>
+callAlignWidget()</text>
 </klayout-macro>
