@@ -648,5 +648,5 @@ def bindMenu():
     menu.insert_item("tools_menu.end", "Align Tool", act)
     act.on_triggered(lambda : callAlignWidget())
     
-callAlignWidget()</text>
+bindMenu()</text>
 </klayout-macro>
