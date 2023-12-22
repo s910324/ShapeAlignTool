@@ -12,7 +12,6 @@ def selectedAnnotationBox(view):
     return box
     
 def globalTrans(o, x, y):
-    transPath(o)
     trans  = o.dtrans()
     inv    = trans.inverted()
     trans2 = pya.DTrans(float(x), float(y))
