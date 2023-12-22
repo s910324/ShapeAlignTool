@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<klayout-macro>
+ <description>Align Tool</description>
+ <version/>
+ <category>pymacros</category>
+ <prolog/>
+ <epilog/>
+ <doc/>
+ <autorun>true</autorun>
+ <autorun-early>false</autorun-early>
+ <priority>0</priority>
+ <shortcut>A</shortcut>
+ <show-in-menu>true</show-in-menu>
+ <group-name>Align Tool</group-name>
+ <menu-path>tools_menu.end</menu-path>
+ <interpreter>python</interpreter>
+ <dsl-interpreter-name/>
+ <text>import os 
+import sys
+import pya
+from   importlib import reload  
+
+libPath  = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "python"))
+
+for importPath in [libPath, comPathL if os.path.exists(comPathL) else comPathG]:
+    if not importPath in sys.path:
+        sys.path.insert(0, importPath)
+  
+import shapeAlignWidget
+import shapeDistribute
+import shapeMisc
+import shapeRotate
+import shapeShadow
+import shapeTrans
+import shapeTransRuler
+
+reload(shapeAlignWidget)
+reload(shapeDistribute)
+reload(shapeMisc)
+reload(shapeRotate)
+reload(shapeShadow)
+reload(shapeTrans)
+reload(shapeTransRuler)
+
+# bug fix : instance in instance align error
+
+mainWindow    = pya.Application.instance().main_window()
+screenRect    = pya.QApplication.desktop().screenGeometry()
+
+def callAlignWidget():
+    layoutView = mainWindow.current_view()  
+    if layoutView:
+
+        height        = screenRect.height
+        width         = screenRect.width
+        widget        = shapeAlignWidget.AlignWidget()
+        widget.show()
+        x = mainWindow.pos.x + 25
+        y = mainWindow.pos.y + mainWindow.height - widget.height - 50
+        
+        widget.move(pya.QPoint(x, y))
+    else:
+        pass
+
+
+callAlignWidget()</text>
+</klayout-macro>
