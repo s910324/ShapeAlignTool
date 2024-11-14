@@ -16,13 +16,15 @@ def globalTrans(o, x, y):
     xytrans = pya.DTrans(float(x), float(y))
 
     if o.is_cell_inst():
-        itrans = o.inst().dtrans
+        itrans = o.inst().dtrans      
         gtrans = (otrans * itrans)
-        inv    = gtrans.inverted()
+        inv    = (gtrans.inverted())
         o.inst().transform(inv * xytrans * gtrans)
+        
     else:
         o.shape.transform(xytrans)
-       
+
+
 def visibleLayers(view):
     return [ layerProp.layer_index() for layerProp in view.each_layer() if layerProp.visible]
     
@@ -67,6 +69,11 @@ if __name__ == "__main__":
     def move_test():
         for o in selectedShapes(vw):
             globalTrans(o, -20, 30)
-
-    move_test()
+            
+    def select_test():
+        print(len(selectedShapes(vw)))
+        for o in selectedShapes(vw):
+            print(o)
+    
+    #select_test()
             

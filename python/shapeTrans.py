@@ -26,13 +26,15 @@ class ShapeTrans(object):
 
         self.layoutView.transaction(f"{transTextV}{transTextH}")
         try:
+
             for o in self.selectedShapes(): 
-            
+                vbox = self.visibleBBox(o, useVisibleLayers)
+
                 if firstBox.empty():
-                    firstBox    = self.visibleBBox(o, useVisibleLayers)
+                    firstBox    = vbox
                     
                 else:
-                    secondBox   = self.visibleBBox(o, useVisibleLayers)    
+                    secondBox   = vbox
                     alignLeft   = firstBox.left       - secondBox.left       
                     alignCenter = firstBox.center().x - secondBox.center().x
                     alignright  = firstBox.right      - secondBox.right      
