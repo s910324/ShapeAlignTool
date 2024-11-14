@@ -61,11 +61,10 @@ class ShapeTransRuler(object):
         self.shadowHdl.releaseGrabShadows()
         
     def transByRuler(self):        
-
         if self.grabRuler and self.selectedShapes():
             ruler  = self.grabRuler
             vector = (ruler.p2-ruler.p1)
-            self.layoutView.transaction("move by ruler")
+            self.layoutView.transaction("Move by ruler")
             try:
                 for o in self.selectedShapes(): 
                     shapeMisc.globalTrans(o, vector.x, vector.y)

@@ -12,35 +12,41 @@ def selectedAnnotationBox(view):
     return box
     
 def globalTrans(o, x, y):
-    trans  = o.dtrans()
-    inv    = trans.inverted()
-    trans2 = pya.DTrans(float(x), float(y))
+    otrans  = o.dtrans()
+    xytrans = pya.DTrans(float(x), float(y))
 
     if o.is_cell_inst():
-        o.inst().transform(inv * trans2 * trans)
+        itrans = o.inst().dtrans
+        gtrans = (otrans * itrans)
+        inv    = gtrans.inverted()
+        o.inst().transform(inv * xytrans * gtrans)
     else:
-        o.shape.transform(inv * trans2 * trans)
-        
+        o.shape.transform(xytrans)
+       
 def visibleLayers(view):
     return [ layerProp.layer_index() for layerProp in view.each_layer() if layerProp.visible]
     
 def shapeShadow(view, o, boxOnly = False, useVisibleLayers = False): 
     box  = None
     poly = None
+
     if not(o.is_cell_inst()):
         if o.shape.dpolygon:
-            poly = o.shape.dpolygon.transformed(o.dtrans())      
+            poly = o.shape.dpolygon.transformed(o.dtrans())   
             box  = poly.bbox()
     else:
-        if useVisibleLayers:
-            box = DBox()
+        inst = o.inst()
+
+        if not(boxOnly):
+            box = pya.DBox()
             for layer_index in visibleLayers(view):
-                box += o.inst().dbbox(layer_index)
+                box += inst.dbbox(layer_index)
             poly = pya.DPolygon(box)  
         else: 
-            poly = pya.DPolygon(o.inst().dbbox())
-            box  = o.inst().dbbox()
-        trans = o.dtrans()
+            box  = inst.dbbox()
+            poly = pya.DPolygon(box)
+            
+        trans = o.source_dtrans()
         box   = box.transformed(trans)
         poly  = poly.transformed(trans)
         
@@ -48,3 +54,19 @@ def shapeShadow(view, o, boxOnly = False, useVisibleLayers = False):
     
 def visibleBBox(view, o, useVisibleLayers = False):
     return shapeShadow(view, o, boxOnly = True, useVisibleLayers = useVisibleLayers) 
+    
+    
+if __name__ == "__main__": 
+    mw = pya.Application.instance().main_window() 
+    vw = mw.current_view() 
+    
+    def draw_test():
+        for o in selectedShapes(vw):
+            print(shapeShadow(vw, o))
+            
+    def move_test():
+        for o in selectedShapes(vw):
+            globalTrans(o, -20, 30)
+
+    move_test()
+            

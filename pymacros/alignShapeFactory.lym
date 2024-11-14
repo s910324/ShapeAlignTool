@@ -9,7 +9,7 @@
  <autorun>true</autorun>
  <autorun-early>false</autorun-early>
  <priority>0</priority>
- <shortcut>A</shortcut>
+ <shortcut/>
  <show-in-menu>true</show-in-menu>
  <group-name>Align Tool</group-name>
  <menu-path>tools_menu.end</menu-path>
@@ -20,9 +20,10 @@ import sys
 import pya
 from   importlib import reload  
 
-libPath  = os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "python"))
+libPath  = [os.path.realpath(os.path.join(os.path.dirname(__file__), "..", "python"))]
 
-for importPath in [libPath, comPathL if os.path.exists(comPathL) else comPathG]:
+
+for importPath in libPath:
     if not importPath in sys.path:
         sys.path.insert(0, importPath)
   
@@ -34,13 +35,17 @@ import shapeShadow
 import shapeTrans
 import shapeTransRuler
 
-reload(shapeAlignWidget)
-reload(shapeDistribute)
-reload(shapeMisc)
-reload(shapeRotate)
-reload(shapeShadow)
-reload(shapeTrans)
-reload(shapeTransRuler)
+def rld():
+    reload(shapeAlignWidget)
+    reload(shapeDistribute)
+    reload(shapeMisc)
+    reload(shapeRotate)
+    reload(shapeShadow)
+    reload(shapeTrans)
+    reload(shapeTransRuler)
+
+rld()
+
 
 # bug fix : instance in instance align error
 

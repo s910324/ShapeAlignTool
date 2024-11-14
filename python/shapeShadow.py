@@ -32,7 +32,7 @@ class ShapeShadow(object):
             for o in shapeArray:
                 shadowShape = shapeMisc.shapeShadow(self.layoutView, o, boxOnly, useVisibleLayers)
                 shadow      = self.drawShadow(shadowShape).transformed(pya.DTrans(float(offset_x), float(offset_y)))
-                
+
                 #shadow      = self.globalShadowTrans( o, shadow, offset_x, offset_y)
                 self.grabShadows.append(shadow)
                 self.layoutView.insert_annotation(shadow)
@@ -58,4 +58,4 @@ class ShapeShadow(object):
 if __name__ == "__main__":    
     mainWindow = pya.Application.instance().main_window()    
     ss = ShapeShadow(mainWindow.current_view())
-    ss.grabSelectedShadow(10, 0)
+    ss.grabSelectedShadow(0, 0)

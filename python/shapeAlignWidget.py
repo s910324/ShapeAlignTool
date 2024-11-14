@@ -27,7 +27,7 @@ class AlignWidget(pya.QWidget):
         self.shadowHdl     = shapeShadow.ShapeShadow(self.layoutView)
         
         self.initUI(iconPathStr, alignUI, snapUI, rotateUI, booleanUI, distributeUI, utilUI)
-        
+
     def initUI(self, iconPathStr, alignUI, snapUI, rotateUI, booleanUI, distributeUI, utilUI):
         columnSpacing            = 20
         rowSpacing               = 20
