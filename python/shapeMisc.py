@@ -19,7 +19,8 @@ def globalTrans(o, x, y):
         itrans = o.inst().dtrans      
         gtrans = (otrans * itrans)
         inv    = (gtrans.inverted())
-        o.inst().transform(inv * xytrans * gtrans)
+        #o.inst().transform(inv * xytrans * gtrans)
+        o.inst().transform( xytrans)
         
     else:
         o.shape.transform(xytrans)
@@ -68,12 +69,12 @@ if __name__ == "__main__":
             
     def move_test():
         for o in selectedShapes(vw):
-            globalTrans(o, -20, 30)
+            globalTrans(o, -10, 0)
             
     def select_test():
         print(len(selectedShapes(vw)))
         for o in selectedShapes(vw):
             print(o)
     
-    #select_test()
+    move_test()
             
